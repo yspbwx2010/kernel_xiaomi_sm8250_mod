@@ -2509,7 +2509,7 @@ static ssize_t disksize_store(struct device *dev,
 	struct zram *zram = dev_to_zram(dev);
 	int err;
 
-	disksize = ((u64)totalram_pages << PAGE_SHIFT);
+	disksize = ((u64)totalram_pages() << PAGE_SHIFT);
 	if (!disksize)
 		return -EINVAL;
 
