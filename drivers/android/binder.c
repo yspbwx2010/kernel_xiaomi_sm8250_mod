@@ -587,10 +587,10 @@ static void binder_wakeup_poll_threads_ilocked(struct binder_proc *proc,
 		if (thread->looper & BINDER_LOOPER_STATE_POLL &&
 		    binder_available_for_proc_work_ilocked(thread)) {
 #ifdef CONFIG_SCHED_WALT
-			if (sync && thread->task && thread->task->signal &&
-				(thread->task->signal->oom_score_adj <= 0)) {
+			if (thread->task && current->signal &&
+				(current->signal->oom_score_adj == 0) &&
+				(current->prio < DEFAULT_PRIO))
 				thread->task->low_latency = true;
-			}
 #endif
 			if (sync)
 				wake_up_interruptible_sync(&thread->wait);
@@ -652,8 +652,9 @@ static void binder_wakeup_thread_ilocked(struct binder_proc *proc,
 
 	if (thread) {
 #ifdef CONFIG_SCHED_WALT
-		if (sync && thread->task && thread->task->signal &&
-			(thread->task->signal->oom_score_adj <= 0))
+		if (thread->task && current->signal &&
+			(current->signal->oom_score_adj == 0) &&
+			(current->prio < DEFAULT_PRIO))
 			thread->task->low_latency = true;
 #endif
 		if (sync)
@@ -3841,12 +3842,6 @@ static void binder_transaction(struct binder_proc *proc,
 			thread->prio_next = in_reply_to->saved_priority;
 			spin_unlock(&thread->prio_lock);
 		}
-#ifdef CONFIG_SCHED_WALT
-		if (target_thread->task && target_thread->task->signal &&
-			(target_thread->task->signal->oom_score_adj <= 0)) {
-			target_thread->task->low_latency = true;
-		}
-#endif
 		wake_up_interruptible_sync(&target_thread->wait);
 #ifdef CONFIG_BINDER_OPT
 		binder_thread_restore_inherit_top_app(thread);
