@@ -21,7 +21,7 @@ for path in "${SEARCH_PATHS[@]}"; do
   found=$(find "$path" -maxdepth 5 -type d -name 'proton-clang-20210522' -print -quit 2>/dev/null)
   
   if [[ -n "$found" ]]; then
-    TOOLCHAIN_PATH="$found"
+    TOOLCHAIN_PATH="$found"/bin
     echo "✅ 找到工具链目录: $TOOLCHAIN_PATH"
     break
   fi
@@ -37,7 +37,7 @@ if [[ -z "$TOOLCHAIN_PATH" ]]; then
 fi
 
 # 检查关键文件是否存在
-CLANG_BIN="$TOOLCHAIN_PATH/bin/clang"
+CLANG_BIN="$TOOLCHAIN_PATH/clang"
 if [[ ! -f "$CLANG_BIN" ]]; then
   echo "❌ 错误：工具链不完整，缺少 clang 可执行文件"
   exit 2
