@@ -4,8 +4,7 @@
 
 # Ensure the script exits on error
 set -e
-HOME=/home/runner
-TOOLCHAIN_PATH=$home/proton-clang/proton-clang-20210522/bin
+export TOOLCHAIN_PATH=$GITHUB_WORKSPACE/proton-clang/proton-clang-20210522
 GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)
 TARGET_DEVICE=$1
 
