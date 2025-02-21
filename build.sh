@@ -4,7 +4,52 @@
 
 # Ensure the script exits on error
 set -e
-export TOOLCHAIN_PATH=$GITHUB_WORKSPACE/proton-clang/proton-clang-20210522
+#!/bin/bash
+
+# 优先在当前目录和用户主目录下搜索（避免全盘搜索）
+SEARCH_PATHS=(
+  "$PWD" 
+  "$HOME" 
+  "/usr/local" 
+  "/opt"
+)
+
+# 尝试查找 proton-clang-20210522 目录
+TOOLCHAIN_PATH=""
+for path in "${SEARCH_PATHS[@]}"; do
+  echo "正在搜索: $path"
+  found=$(find "$path" -maxdepth 5 -type d -name 'proton-clang-20210522' -print -quit 2>/dev/null)
+  
+  if [[ -n "$found" ]]; then
+    TOOLCHAIN_PATH="$found"
+    echo "✅ 找到工具链目录: $TOOLCHAIN_PATH"
+    break
+  fi
+done
+
+# 验证结果
+if [[ -z "$TOOLCHAIN_PATH" ]]; then
+  echo "❌ 错误：未找到 proton-clang-20210522 目录"
+  echo "请尝试以下方法："
+  echo "1. 确认已下载并解压工具链"
+  echo "2. 手动指定路径：export TOOLCHAIN_PATH=/your/path"
+  exit 1
+fi
+
+# 检查关键文件是否存在
+CLANG_BIN="$TOOLCHAIN_PATH/bin/clang"
+if [[ ! -f "$CLANG_BIN" ]]; then
+  echo "❌ 错误：工具链不完整，缺少 clang 可执行文件"
+  exit 2
+fi
+
+# 设置环境变量
+export TOOLCHAIN_PATH
+echo "已设置环境变量 TOOLCHAIN_PATH=$TOOLCHAIN_PATH"
+
+# 验证工具链版本
+"$CLANG_BIN" --version | grep 'clang version'
+
 GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)
 TARGET_DEVICE=$1
 
