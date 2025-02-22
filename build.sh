@@ -139,7 +139,7 @@ echo "TARGET_DEVICE: $TARGET_DEVICE"
 
 if [ $KSU_ENABLE -eq 1 ]; then
     echo "KSU is enabled"
-    curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/refs/heads/main/kernel/setup.sh" | bash -s
+    curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/refs/heads/next/kernel/setup.sh" | bash -s
 else
     echo "KSU is disabled"
 fi
@@ -155,9 +155,9 @@ git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --dep
 
 # Add date to local version
 local_version_str="-perf"
-local_version_date_str="-$(date +%Y%m%d)-${GIT_COMMIT_ID}-perf"
 
-sed -i "s/${local_version_str}/${local_version_date_str}/g" arch/arm64/configs/${TARGET_DEVICE}_defconfig
+
+sed -i "s/${local_version_str}//" arch/arm64/configs/${TARGET_DEVICE}_defconfig
 
 
 # ------------- Building for MIUI -------------
@@ -236,52 +236,41 @@ fi
 
 scripts/config --file out/.config \
     --set-str STATIC_USERMODEHELPER_PATH /system/bin/micd \
-# 基础配置
-          -d DEBUG_FS \            # 生产环境减少调试开销
-          -e LTO_CLANG \           # 避免潜在编译问题
-          -d LOCALVERSION_AUTO \   # 固定版本号
-          -e PERF_CRITICAL_RT_TASK \   # 实时任务调度
-          -e SF_BINDER \               # SurfaceFlinger Binder优化
-          -e OVERLAY_FS \              # Android动态分区必需
-          -e TASK_DELAY_ACCT \         # 延迟统计（需权衡开销）
-
-          # 内存管理优化
-          -e MIUI_ZRAM_MEMORY_TRACKING \  # ZRAM监控
-          -e MI_RECLAIM \             # 定制内存回收
-          -e BOOTUP_RECLAIM \         # 启动加速
-          -d MI_MEMORY_SYSFS \        # 减少sysfs开销
-
-          # 处理器调度
-          -e MIGT \                   # 多核调度
-          -e MIGT_ENERGY_MODEL \      # 能效模型
-          -e EAS \                    # 新增：能效感知调度
-          -e UCLAMP_TASK \            # 新增：任务利用率钳制
-
-          # 硬件特性支持
-          -e HW_FBE_METADATA \        # 新增：FBE硬件加密
-          -e QCOM_CPUFREQ_HW \        # 新增：骁龙CPU频率驱动
-          -e ADRENO_SMMU \            # 新增：GPU内存管理
-          -e F2FS_FS \                # 新增：闪存友好文件系统
-
-          # 稳定性调整
-          -d XIAOMI_MIUI \            # 减少MIUI定制依赖
-          -d MIHW \                   # 冗余硬件抽象层
-          -d PACKAGE_RUNTIME_INFO \   # 减少运行时开销
-          -d CONFIG_MODULE_SIG_SHA512 \ # 简化模块签名
-          -e MODULE_SIG \             # 新增：基础模块验证
-
-          # 电源管理
-          -e QCOM_LMH \               # 新增：温度限频
-          -e QTI_BCL_PMIC5 \          # 新增：PMIC温度监控
-          -e THERMAL_SPM \            # 新增：SPM温控集成
-
-          # 网络优化
-          -e WLAN_FEATURE_PKT_CAPTURE \ # 新增：WiFi诊断
-          -e IPA_V3 \                 # 新增：IP加速器v3
-
-          # 调试与监控
-          -e SCHEDSTATS \             # 新增：调度器统计
-          -d KPERFEVENTS \            # 
+    -d DEBUG_FS \
+    -e LTO_CLANG \
+    -d LOCALVERSION_AUTO \
+    -e PERF_CRITICAL_RT_TASK \
+    -e SF_BINDER \
+    -e OVERLAY_FS \
+    -e TASK_DELAY_ACCT \
+    -e MIUI_ZRAM_MEMORY_TRACKING \
+    -e MI_RECLAIM \
+    -e BOOTUP_RECLAIM \
+    -d MI_MEMORY_SYSFS \
+    -e MIGT \
+    -e MIGT_ENERGY_MODEL \
+    -e EAS \
+    -e UCLAMP_TASK \
+    -e HW_FBE_METADATA \
+    -e QCOM_CPUFREQ_HW \
+    -e ADRENO_SMMU \
+    -e F2FS_FS \
+    -e XIAOMI_MIUI \
+    -e MIHW \
+    -e PACKAGE_RUNTIME_INFO \
+    -d CONFIG_MODULE_SIG_SHA512 \
+    -e MODULE_SIG \
+    -e QCOM_LMH \
+    -e QTI_BCL_PMIC5 \
+    -e THERMAL_SPM \
+    -e WLAN_FEATURE_PKT_CAPTURE \
+    -e IPA_V3 \
+    -e SCHEDSTATS \
+    -e BINDER_OPT \
+    -e MI_FRAGMENTION \
+    -e MI_FRAGMENTION \
+    -e RTMM \
+    -d KPERFEVENTS
 
 make $MAKE_ARGS -j$(nproc)
 
@@ -309,14 +298,7 @@ cp out/arch/arm64/boot/dtb anykernel/kernels/
 echo "Build for MIUI finished."
 
 # Restore local version string
-sed -i "s/${local_version_date_str}/${local_version_str}/g" arch/arm64/configs/${TARGET_DEVICE}_defconfig
+sed -i "s/${local_version_str}//" arch/arm64/configs/${TARGET_DEVICE}_defconfig
 
 # ------------- End of Building for MIUI -------------
 #  If you don't need MIUI you can comment out the above block [Building for MIUI]
-
-
-cd anykernel 
-
-ZIP_FILENAME=Kernel_MIUI_${TARGET_DEVICE}_${KSU_ZIP_STR}_$(date +'%Y%m%d_%H%M%S')_anykernel3_${GIT_COMMIT_ID}.zip
-
-zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
