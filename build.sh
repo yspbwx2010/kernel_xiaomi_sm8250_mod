@@ -18,7 +18,7 @@ SEARCH_PATHS=(
 TOOLCHAIN_PATH=""
 for path in "${SEARCH_PATHS[@]}"; do
   echo "正在搜索: $path"
-  found=$(find "$path" -maxdepth 5 -type d -name 'clang1' -print -quit 2>/dev/null)
+  found=$(find "$path" -maxdepth 5 -type d -name '20210522' -print -quit 2>/dev/null)
   
   if [[ -n "$found" ]]; then
     TOOLCHAIN_PATH="$found"/bin
@@ -29,7 +29,7 @@ done
 
 # 验证结果
 if [[ -z "$TOOLCHAIN_PATH" ]]; then
-  echo "❌ 错误：未找到 clang1 目录"
+  echo "❌ 错误：未找到 20210522 目录"
   echo "请尝试以下方法："
   echo "1. 确认已下载并解压工具链"
   echo "2. 手动指定路径：export TOOLCHAIN_PATH=/your/path"
