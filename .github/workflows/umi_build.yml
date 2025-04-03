@@ -1,0 +1,140 @@
+name: Build Umi MIUI Kernel
+on:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: Build Umi MIUI Kernel
+    runs-on: ubuntu-24.04
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set swap to 10G
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
+
+    - name: Setup build kernel environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses6 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 gcc
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+
+    - name: Download Clang
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir clang
+        wget https://github.com/ZyCromerZ/Clang/releases/download/21.0.0git-20250402-release/Clang-21.0.0git-20250402.tar.gz
+        tar -C clang/ -zxvf Clang-21.0.0git-20250402.tar.gz
+
+    - name: Setup KernelSU
+      run: |
+        rm -rf KernelSU
+        curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
+        patch -p1 < ksu.patch
+        echo "CONFIG_KSU=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KPM=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SU=n" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SUS_KSTAT=n" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_ENABLE_LOG=n" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./arch/arm64/configs/umi_defconfig
+        echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/umi_defconfig
+
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: build-kernel-umi
+        max-size: 3G
+
+    - name: Build kernel
+      run: |
+        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang/bin:$PATH
+        export KBUILD_BUILD_HOST=suki
+        export KBUILD_BUILD_USER=mi
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+        make ARCH=arm64 CC="ccache clang" O=out umi_defconfig
+        scripts/config --file out/.config \
+            --set-str STATIC_USERMODEHELPER_PATH /system/bin/micd \
+            -e CPU_IDLE_GOV_TEO    \
+            -e PERF_CRITICAL_RT_TASK    \
+            -e SF_BINDER        \
+            -e OVERLAY_FS        \
+            -d DEBUG_FS \
+            -e MIGT \
+            -e MIGT_ENERGY_MODEL \
+            -e MIHW \
+            -e PACKAGE_RUNTIME_INFO \
+            -e BINDER_OPT \
+            -e KPERFEVENTS \
+            -e MILLET \
+            -e PERF_HUMANTASK \
+            -d LTO_CLANG \
+            -e SF_BINDER \
+            -e XIAOMI_MIUI \
+            -d MI_MEMORY_SYSFS \
+            -e TASK_DELAY_ACCT \
+            -e MIUI_ZRAM_MEMORY_TRACKING \
+            -d CONFIG_MODULE_SIG_SHA512 \
+            -d CONFIG_MODULE_SIG_HASH \
+            -e MI_FRAGMENTION \
+            -e PERF_HELPER \
+            -e BOOTUP_RECLAIM \
+            -e MI_RECLAIM \
+            -e RTMM 
+            
+        make ARCH=arm64 O=out CC="ccache clang" -j16
+
+    - name: Patch kernel
+      run: |
+        cp ./kpmpatcher/patch ./out/arch/arm64/boot
+        cd ./out/arch/arm64/boot
+        chmod 777 patch
+        ./patch
+      
+    - name: Upload Kernel
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-umi
+        path: out/arch/arm64/boot/Image
+        
+    - name: Upload Patched Kernel
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-patched-umi
+        path: out/arch/arm64/boot/oImage
+        
+    - name: Upload DTBO image
+      uses: actions/upload-artifact@v4
+      with:
+        name: dtbo-umi
+        path: out/arch/arm64/boot/dtbo.img
+
+    - name: Make Anykernel3
+      run: |
+        cp ./out/arch/arm64/boot/oImage ./Anykernel3
+        cp ./out/arch/arm64/boot/dtbo ./Anykernel3
+        cd ./Anykernel3
+        mv oImage Image
+
+    - name: Upload Anykernel3
+      uses: actions/upload-artifact@v4
+      with:
+        name: Anykernel3-umi
+        path: Anykernel3/*
