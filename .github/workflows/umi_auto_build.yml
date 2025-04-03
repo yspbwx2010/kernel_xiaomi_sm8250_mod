@@ -1,4 +1,4 @@
-name: Build Umi MIUI Kernel
+name: Auto Build Umi MIUI Kernel
 on:
   push:
     branches:
