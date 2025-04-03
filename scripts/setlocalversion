@@ -215,4 +215,4 @@ else
 	fi
 fi
 
-echo "$res"
+echo "-perf-g35fcd5da188a"
