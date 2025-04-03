@@ -128,13 +128,13 @@ jobs:
 
     - name: Make Anykernel3
       run: |
-        cp ./out/arch/arm64/boot/oImage ./Anykernel3
-        cp ./out/arch/arm64/boot/dtbo.img ./Anykernel3
-        cd ./Anykernel3
+        cp ./out/arch/arm64/boot/oImage ./Anykernel
+        cp ./out/arch/arm64/boot/dtbo.img ./Anykernel
+        cd ./Anykernel
         mv oImage Image
 
     - name: Upload Anykernel3
       uses: actions/upload-artifact@v4
       with:
         name: Anykernel3-umi
-        path: Anykernel3/*
+        path: Anykernel/*
