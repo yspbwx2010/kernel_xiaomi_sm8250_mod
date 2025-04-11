@@ -1,18 +1,8 @@
---- ./KernelSU/kernel/Makefile
-+++ ./KernelSU/kernel/Makefile
-@@ -14,11 +14,6 @@ kernelsu-objs += selinux/rules.o
- ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
- ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h
- 
--# Do checks before compile
--ifneq ($(shell grep -q "int path_umount" $(srctree)/fs/namespace.c; echo $$?),0)
--$(error -- Backporting path_umount is mandatory !! Read: https://kernelsu.org/guide/how-to-integrate-for-non-gki.html#how-to-backport-path-umount)
--endif
--
- # https://github.com/tiann/KernelSU/pull/2102/files#diff-3a325663233178293ee38b8161f3be511a466af7e0156b9d03d5aed0497564bfR19
- IS_GKI := $(strip $(shell \
-     if [ "$(VERSION)" -ge "5" -a "$(PATCHLEVEL)" -ge "10" ]; then \
-@@ -76,6 +71,85 @@ ifeq ($(shell grep -q "struct selinux_state " $(srctree)/security/selinux/includ
+diff --git a/kernel/Makefile b/kernel/Makefile
+index e22d99a1..a6377786 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -109,6 +109,85 @@ ifeq ($(shell grep -q "struct selinux_state " $(srctree)/security/selinux/includ
  ccflags-y += -DKSU_COMPAT_HAS_SELINUX_STATE
  endif
  
@@ -95,6 +85,26 @@
 +$(info -- KernelSU compat: adding 'int path_umount(struct path *path, int flags);' to $(srctree)/fs/internal.h)
 +endif
 +
- # This feature was introduced in linux 5.0-rc1
+ # 该功能在 linux 5.0-rc1 中引入
  ifeq ($(shell grep -q "get_cred_rcu" $(srctree)/include/linux/cred.h; echo $$?),0)
  ccflags-y += -DKSU_COMPAT_HAS_GET_CRED_RCU
+@@ -206,12 +285,6 @@ $(info -- SukiSU_SUSFS: adding 'int path_umount(struct path *path, int flags);'
+ $(shell printf "\nint path_umount(struct path *path, int flags);\n" >> $(srctree)/fs/internal.h)
+ endif
+ 
+-# Do checks before compile
+-ifneq ($(shell grep -q "int path_umount" $(srctree)/fs/namespace.c; echo $$?),0)
+-$(error -- Backporting path_umount is mandatory !! Read: https://kernelsu.org/guide/how-to-integrate-for-non-gki.html#how-to-backport-path-umount)
+-endif
+-
+-
+ ## For susfs stuff ##
+ ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
+ $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
+@@ -221,4 +294,4 @@ else
+ $(info -- You have not integrate susfs in your kernel.)
+ $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
+ endif
+-# Keep a new line here!! Because someone may append config
+\ No newline at end of file
++# Keep a new line here!! Because someone may append config
