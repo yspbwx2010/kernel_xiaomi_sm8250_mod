@@ -101,3 +101,10 @@ index e22d99a1..a6377786 100644
  ## For susfs stuff ##
  ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
  $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
+@@ -221,4 +294,4 @@ else
+ $(info -- You have not integrate susfs in your kernel.)
+ $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
+ endif
+-# Keep a new line here!! Because someone may append config
+\ No newline at end of file
++# Keep a new line here!! Because someone may append config
