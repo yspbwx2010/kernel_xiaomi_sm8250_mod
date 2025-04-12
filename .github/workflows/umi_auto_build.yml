@@ -36,7 +36,7 @@ jobs:
       run: |
         rm -rf KernelSU
         curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
-        patch -p1 < ksu.patch
+        
         echo "CONFIG_KSU=y" >> ./arch/arm64/configs/umi_defconfig
         echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./arch/arm64/configs/umi_defconfig
         echo "CONFIG_KPM=y" >> ./arch/arm64/configs/umi_defconfig
