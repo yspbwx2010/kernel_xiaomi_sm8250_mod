@@ -131,7 +131,6 @@ jobs:
     - name: Make Anykernel3
       run: |
         cp ./out/arch/arm64/boot/oImage ./Anykernel
-        cp ./out/arch/arm64/boot/dtbo.img ./Anykernel
         cd ./Anykernel
         mv oImage Image
 
