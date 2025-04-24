@@ -843,8 +843,7 @@ struct filename* susfs_get_redirected_path(unsigned long ino) {
 
 /* sus_su */
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
-bool susfs_is_sus_su_hooks_enabled __read_mostly = false;
-static int susfs_sus_su_working_mode = 0;
+extern int susfs_sus_su_working_mode;
 extern void ksu_susfs_enable_sus_su(void);
 extern void ksu_susfs_disable_sus_su(void);
 
@@ -871,8 +870,6 @@ int susfs_sus_su(struct st_sus_su* __user user_info) {
 			return 2;
 		}
 		ksu_susfs_enable_sus_su();
-		susfs_sus_su_working_mode = SUS_SU_WITH_HOOKS;
-		susfs_is_sus_su_hooks_enabled = true;
 		SUSFS_LOGI("core kprobe hooks for ksu are disabled!\n");
 		SUSFS_LOGI("non-kprobe hook sus_su is enabled!\n");
 		SUSFS_LOGI("sus_su mode: %d\n", SUS_SU_WITH_HOOKS);
@@ -882,9 +879,7 @@ int susfs_sus_su(struct st_sus_su* __user user_info) {
 			SUSFS_LOGE("current sus_su mode is already %d\n", SUS_SU_DISABLED);
 			return 1;
 		}
-		susfs_is_sus_su_hooks_enabled = false;
 		ksu_susfs_disable_sus_su();
-		susfs_sus_su_working_mode = SUS_SU_DISABLED;
 		if (last_working_mode == SUS_SU_WITH_HOOKS) {
 			SUSFS_LOGI("core kprobe hooks for ksu are enabled!\n");
 			goto out;
