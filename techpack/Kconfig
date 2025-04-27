@@ -9,6 +9,11 @@ config TECHPACK_CAMERA_XIAOMI
     help
       Xiaomi camera
 
+config TECHPACK_CAMERA_XIAOMI_PSYCHE
+    bool "Xiaomi camera psyche"
+    help
+      Xiaomi camera psyche
+
 config TECHPACK_CAMERA_XIAOMI_CAS
     bool "Xiaomi camera CAS"
     help
