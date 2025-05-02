@@ -2063,7 +2063,7 @@ update_task_rq_cpu_cycles(struct task_struct *p, struct rq *rq, int event,
 
 	if (!use_cycle_counter) {
 		rq->task_exec_scale = DIV64_U64_ROUNDUP(cpu_cur_freq(cpu) *
-				topology_get_cpu_scale(NULL, cpu),
+				topology_get_cpu_scale(cpu),
 				rq->cluster->max_possible_freq);
 		return;
 	}
@@ -2100,7 +2100,7 @@ update_task_rq_cpu_cycles(struct task_struct *p, struct rq *rq, int event,
 		SCHED_BUG_ON((s64)time_delta < 0);
 
 		rq->task_exec_scale = DIV64_U64_ROUNDUP(cycles_delta *
-				topology_get_cpu_scale(NULL, cpu),
+				topology_get_cpu_scale(cpu),
 				time_delta * rq->cluster->max_possible_freq);
 		trace_sched_get_task_cpu_cycles(cpu, event,
 				cycles_delta, time_delta, p);
@@ -2291,7 +2291,7 @@ void mark_task_starting(struct task_struct *p)
 
 #define pct_to_min_scaled(tunable) \
 		div64_u64(((u64)sched_ravg_window * tunable *		\
-			 topology_get_cpu_scale(NULL,			\
+			 topology_get_cpu_scale(			\
 			 cluster_first_cpu(sched_cluster[0]))),	\
 			 ((u64)SCHED_CAPACITY_SCALE * 100))
 
@@ -2385,7 +2385,7 @@ static struct sched_cluster *alloc_new_cluster(const struct cpumask *cpus)
 
 	raw_spin_lock_init(&cluster->load_lock);
 	cluster->cpus = *cpus;
-	cluster->efficiency = topology_get_cpu_scale(NULL, cpumask_first(cpus));
+	cluster->efficiency = topology_get_cpu_scale(cpumask_first(cpus));
 
 	if (cluster->efficiency > max_possible_efficiency)
 		max_possible_efficiency = cluster->efficiency;
@@ -3158,7 +3158,7 @@ unsigned long do_thermal_cap(int cpu, unsigned long thermal_max_freq)
 		}
 
 		nr_cap_states = em_pd_nr_cap_states(pd->em_pd);
-		scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+		scale_cpu = arch_scale_cpu_capacity(cpu);
 		freq = pd->em_pd->table[nr_cap_states - 1].frequency;
 		max_cap[cpu] = DIV_ROUND_UP(scale_cpu * freq,
 					cpu_max_table_freq[cpu]);
@@ -3611,7 +3611,7 @@ void walt_fill_ta_data(struct core_ctl_notif_data *data)
 
 	min_cap_cpu = this_rq()->rd->min_cap_orig_cpu;
 	if (min_cap_cpu != -1)
-		scale = arch_scale_cpu_capacity(NULL, min_cap_cpu);
+		scale = arch_scale_cpu_capacity(min_cap_cpu);
 
 	data->coloc_load_pct = div64_u64(total_demand * 1024 * 100,
 			       (u64)sched_ravg_window * scale);
@@ -3623,7 +3623,7 @@ fill_util:
 		if (i == MAX_CLUSTERS)
 			break;
 
-		scale = arch_scale_cpu_capacity(NULL, fcpu);
+		scale = arch_scale_cpu_capacity(fcpu);
 		data->ta_util_pct[i] = div64_u64(cluster->aggr_grp_load * 1024 *
 				       100, (u64)sched_ravg_window * scale);
 
