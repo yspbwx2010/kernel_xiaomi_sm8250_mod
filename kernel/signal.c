@@ -1319,9 +1319,6 @@ int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 {
 	unsigned long flags;
 	int ret = -ESRCH;
-        #ifdef CONFIG_MILLET
-        struct millet_data data;
-        #endif
 	if (start_rekernel_server() == 0) {
  		if (line_is_frozen(p) && (sig == SIGKILL || sig == SIGTERM || sig == SIGABRT || sig == SIGQUIT)) {
      		char binder_kmsg[REKERNEL_PACKET_SIZE];
@@ -1330,6 +1327,7 @@ int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
  		}
  	}
 #ifdef CONFIG_MILLET
+	struct millet_data data;
 
 	if (sig == SIGKILL
 		|| sig == SIGTERM
