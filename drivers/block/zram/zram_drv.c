@@ -37,6 +37,7 @@
 #include <linux/sched.h>
 #include <linux/sched/signal.h>
 #include <linux/vmstat.h>
+#include <linux/mm.h>
 
 #include "zram_drv.h"
 
@@ -2508,7 +2509,7 @@ static ssize_t disksize_store(struct device *dev,
 	struct zram *zram = dev_to_zram(dev);
 	int err;
 
-	disksize = (u64)12288 * SZ_1M;
+	disksize = ((u64)totalram_pages << PAGE_SHIFT);
 	if (!disksize)
 		return -EINVAL;
 
