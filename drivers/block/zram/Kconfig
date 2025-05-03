@@ -2,7 +2,7 @@
 config ZRAM
 	tristate "Compressed RAM block device support"
 	depends on BLOCK && SYSFS && MMU
-	depends on CRYPTO_LZO || CRYPTO_LZ4 || CRYPTO_LZ4HC || CRYPTO_LZ4K || CRYPTO_LZ4KD || CRYPTO_DEFLATE || CRYPTO_842 || CRYPTO_ZSTD
+	depends on CRYPTO_LZO || CRYPTO_LZ4 || CRYPTO_LZ4HC || CRYPTO_LZ4K || CRYPTO_LZ4K_OPLUS || CRYPTO_LZ4KD || CRYPTO_DEFLATE || CRYPTO_842 || CRYPTO_ZSTD || CRYPTO_ZSTDN
 	select ZSMALLOC
 	default n
 	help
@@ -41,6 +41,10 @@ config ZRAM_DEF_COMP_LZ4K
 	bool "lz4k"
 	depends on CRYPTO_LZ4K
 
+config ZRAM_DEF_COMP_LZ4K_OPLUS
+	bool "lz4k_oplus"
+	depends on CRYPTO_LZ4K_OPLUS
+
 config ZRAM_DEF_COMP_LZ4KD
 	bool "lz4kd"
 	depends on CRYPTO_LZ4KD
@@ -57,6 +61,10 @@ config ZRAM_DEF_COMP_ZSTD
 	bool "zstd"
 	depends on CRYPTO_ZSTD
 
+config ZRAM_DEF_COMP_ZSTDN
+	bool "zstdn"
+	depends on CRYPTO_ZSTDN
+
 endchoice
 
 config ZRAM_DEF_COMP
@@ -66,10 +74,12 @@ config ZRAM_DEF_COMP
 	default "lz4" if ZRAM_DEF_COMP_LZ4
 	default "lz4hc" if ZRAM_DEF_COMP_LZ4HC
 	default "lz4k" if ZRAM_DEF_COMP_LZ4K
+	default "lz4k_oplus" if ZRAM_DEF_COMP_LZ4K_OPLUS
 	default "lz4kd" if ZRAM_DEF_COMP_LZ4KD
-        default "deflate" if ZRAM_DEF_COMP_DEFLATE
+    default "deflate" if ZRAM_DEF_COMP_DEFLATE
 	default "842" if ZRAM_DEF_COMP_842
 	default "zstd" if ZRAM_DEF_COMP_ZSTD
+	default "zstdn" if ZRAM_DEF_COMP_ZSTDN
 
 config ZRAM_DEDUP
 	bool "Deduplication support for ZRAM data"
