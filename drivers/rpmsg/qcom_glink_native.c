@@ -246,21 +246,21 @@ struct glink_channel {
 
 static const struct rpmsg_endpoint_ops glink_endpoint_ops;
 
-#define GLINK_CMD_VERSION		0
-#define GLINK_CMD_VERSION_ACK		1
-#define GLINK_CMD_OPEN			2
-#define GLINK_CMD_CLOSE			3
-#define GLINK_CMD_OPEN_ACK		4
-#define GLINK_CMD_INTENT		5
-#define GLINK_CMD_RX_DONE		6
-#define GLINK_CMD_RX_INTENT_REQ		7
-#define GLINK_CMD_RX_INTENT_REQ_ACK	8
-#define GLINK_CMD_TX_DATA		9
-#define GLINK_CMD_CLOSE_ACK		11
-#define GLINK_CMD_TX_DATA_CONT		12
-#define GLINK_CMD_READ_NOTIF		13
-#define GLINK_CMD_RX_DONE_W_REUSE	14
-#define GLINK_CMD_SIGNALS		15
+#define RPM_CMD_VERSION			0
+#define RPM_CMD_VERSION_ACK		1
+#define RPM_CMD_OPEN			2
+#define RPM_CMD_CLOSE			3
+#define RPM_CMD_OPEN_ACK		4
+#define RPM_CMD_INTENT			5
+#define RPM_CMD_RX_DONE			6
+#define RPM_CMD_RX_INTENT_REQ		7
+#define RPM_CMD_RX_INTENT_REQ_ACK	8
+#define RPM_CMD_TX_DATA			9
+#define RPM_CMD_CLOSE_ACK		11
+#define RPM_CMD_TX_DATA_CONT		12
+#define RPM_CMD_READ_NOTIF		13
+#define RPM_CMD_RX_DONE_W_REUSE		14
+#define RPM_CMD_SIGNALS			15
 
 #define GLINK_FEATURE_INTENTLESS	BIT(1)
 
@@ -414,7 +414,7 @@ static void qcom_glink_send_read_notify(struct qcom_glink *glink)
 {
 	struct glink_msg msg;
 
-	msg.cmd = cpu_to_le16(GLINK_CMD_READ_NOTIF);
+	msg.cmd = cpu_to_le16(RPM_CMD_READ_NOTIF);
 	msg.param1 = 0;
 	msg.param2 = 0;
 
@@ -637,7 +637,7 @@ static int __qcom_glink_rx_done(struct qcom_glink *glink,
 	bool reuse = intent->reuse;
 	int ret;
 
-	cmd.id = reuse ? GLINK_CMD_RX_DONE_W_REUSE : GLINK_CMD_RX_DONE;
+	cmd.id = reuse ? RPM_CMD_RX_DONE_W_REUSE : RPM_CMD_RX_DONE;
 	cmd.lcid = cid;
 	cmd.liid = iid;
 
@@ -1220,7 +1220,7 @@ static int qcom_glink_send_signals(struct qcom_glink *glink,
 {
 	struct glink_msg msg;
 
-	msg.cmd = cpu_to_le16(GLINK_CMD_SIGNALS);
+	msg.cmd = cpu_to_le16(RPM_CMD_SIGNALS);
 	msg.param1 = cpu_to_le16(channel->lcid);
 	msg.param2 = cpu_to_le32(sigs);
 
@@ -1316,7 +1316,7 @@ static irqreturn_t qcom_glink_native_intr(int irq, void *data)
 			qcom_glink_handle_intent_req_ack(glink, param1, param2);
 			qcom_glink_rx_advance(glink, ALIGN(sizeof(msg), 8));
 			break;
-		case GLINK_CMD_SIGNALS:
+		case RPM_CMD_SIGNALS:
 			qcom_glink_handle_signals(glink, param1, param2);
 			qcom_glink_rx_advance(glink, ALIGN(sizeof(msg), 8));
 			break;
@@ -1632,7 +1632,7 @@ static int __qcom_glink_send(struct glink_channel *channel,
 		chunk_size = SZ_8K;
 		left_size = len - chunk_size;
 	}
-	req.msg.cmd = cpu_to_le16(GLINK_CMD_TX_DATA);
+	req.msg.cmd = cpu_to_le16(RPM_CMD_TX_DATA);
 	req.msg.param1 = cpu_to_le16(channel->lcid);
 	req.msg.param2 = cpu_to_le32(iid);
 	req.chunk_size = cpu_to_le32(chunk_size);
@@ -1653,7 +1653,7 @@ static int __qcom_glink_send(struct glink_channel *channel,
 			chunk_size = SZ_8K;
 		left_size -= chunk_size;
 
-		req.msg.cmd = cpu_to_le16(GLINK_CMD_TX_DATA_CONT);
+		req.msg.cmd = cpu_to_le16(RPM_CMD_TX_DATA_CONT);
 		req.msg.param1 = cpu_to_le16(channel->lcid);
 		req.msg.param2 = cpu_to_le32(iid);
 		req.chunk_size = cpu_to_le32(chunk_size);
