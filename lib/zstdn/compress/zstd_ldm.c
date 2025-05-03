@@ -11,7 +11,7 @@
 #include "zstd_ldm.h"
 
 #include "../common/debug.h"
-#include "xxhash.h"
+#include "../include/xxhash.h"
 #include "zstd_fast.h"          /* ZSTD_fillHashTable() */
 #include "zstd_double_fast.h"   /* ZSTD_fillDoubleHashTable() */
 #include "zstd_ldm_geartab.h"

@@ -12,7 +12,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/string.h>
-#include "zstd.h"
+#include "include/zstd.h"
 
 #include "common/zstd_deps.h"
 

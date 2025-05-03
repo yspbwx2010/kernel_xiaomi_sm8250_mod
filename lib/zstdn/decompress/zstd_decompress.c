@@ -59,7 +59,7 @@
 #include "../common/fse.h"
 #define HUF_STATIC_LINKING_ONLY
 #include "../common/huf.h"
-#include "xxhash.h" /* xxh64_reset, xxh64_update, xxh64_digest, XXH64 */
+#include "../include/xxhash.h" /* xxh64_reset, xxh64_update, xxh64_digest, XXH64 */
 #include "../common/zstd_internal.h"  /* blockProperties_t */
 #include "zstd_decompress_internal.h"   /* ZSTD_DCtx */
 #include "zstd_ddict.h"  /* ZSTD_DDictDictContent */

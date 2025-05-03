@@ -24,12 +24,12 @@
 #include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
 #include "error_private.h"
 #define ZSTD_STATIC_LINKING_ONLY
-#include "zstd.h"
+#include "../include/zstd.h"
 #define FSE_STATIC_LINKING_ONLY
 #include "fse.h"
 #define HUF_STATIC_LINKING_ONLY
 #include "huf.h"
-#include "xxhash.h"                /* XXH_reset, update, digest */
+#include "../include/xxhash.h"                /* XXH_reset, update, digest */
 #define ZSTD_TRACE 0
 
 
